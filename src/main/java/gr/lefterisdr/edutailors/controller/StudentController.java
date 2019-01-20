@@ -20,24 +20,24 @@ public class StudentController
     private StudentService studentService;
 
     @GetMapping("/{courseId}")
-    public List<Student> getStudents(@PathVariable Integer courseId)
+    public List<Student> getEnrolledStudents(@PathVariable Integer courseId)
             throws CourseNotFoundException
     {
-        return studentService.getStudents(courseId);
+        return studentService.getEnrolledStudents(courseId);
     }
 
     @PostMapping("/{studentId}/{courseId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public Integer registerStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
+    public Integer enrollStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
             throws StudentNotFoundException, CourseNotFoundException, StudentAlreadyRegisteredAtCourseException
     {
-        return studentService.registerStudent(studentId, courseId);
+        return studentService.enrollStudent(studentId, courseId);
     }
 
     @DeleteMapping("/{studentId}/{courseId}")
-    public Integer unregisterStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
+    public Integer disenrollStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
             throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
     {
-        return studentService.unregisterStudent(studentId, courseId);
+        return studentService.disenrollStudent(studentId, courseId);
     }
 }

@@ -25,7 +25,7 @@ public class StudentService
     @Autowired
     private CourseRepo courseRepo;
 
-    public List<Student> getStudents(Integer courseId)
+    public List<Student> getEnrolledStudents(Integer courseId)
             throws CourseNotFoundException
     {
         Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
@@ -55,7 +55,7 @@ public class StudentService
                 .collect(Collectors.toList());
     }
 
-    public Integer registerStudent(Integer studentId, Integer courseId)
+    public Integer enrollStudent(Integer studentId, Integer courseId)
             throws StudentNotFoundException, CourseNotFoundException, StudentAlreadyRegisteredAtCourseException
     {
         Student student = studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
@@ -73,7 +73,7 @@ public class StudentService
         return studentRepo.saveAndFlush(student).getId();
     }
 
-    public Integer unregisterStudent(Integer studentId, Integer courseId)
+    public Integer disenrollStudent(Integer studentId, Integer courseId)
             throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
     {
         Student student = studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);

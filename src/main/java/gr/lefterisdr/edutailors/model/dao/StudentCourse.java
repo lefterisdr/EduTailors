@@ -18,6 +18,8 @@ public class StudentCourse implements Serializable
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private Date enrolmentDate;
 
+    public StudentCourse() {}
+
     public StudentCourse(Student student, Course course)
     {
         pk = new StudentCourseId(student, course);
