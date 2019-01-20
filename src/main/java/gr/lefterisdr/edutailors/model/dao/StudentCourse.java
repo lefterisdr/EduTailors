@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -16,6 +17,12 @@ public class StudentCourse implements Serializable
     private StudentCourseId pk;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private Date enrolmentDate;
+
+    public StudentCourse(Student student, Course course)
+    {
+        pk = new StudentCourseId(student, course);
+        enrolmentDate = new Date(LocalDate.now().toEpochDay());
+    }
 
     public StudentCourseId getPk()
     {

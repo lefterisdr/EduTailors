@@ -14,6 +14,12 @@ public class StudentCourseId implements Serializable
     @ManyToOne(cascade = CascadeType.ALL)
     private Course course;
 
+    public StudentCourseId(Student student, Course course)
+    {
+        this.student = student;
+        this.course = course;
+    }
+
     public Student getStudent()
     {
         return student;

@@ -1,49 +1,43 @@
 package gr.lefterisdr.edutailors.controller;
 
 import gr.lefterisdr.edutailors.exception.CourseNotFoundException;
+import gr.lefterisdr.edutailors.exception.StudentAlreadyRegisteredAtCourseException;
 import gr.lefterisdr.edutailors.exception.StudentNotFoundException;
-import gr.lefterisdr.edutailors.model.dao.Course;
+import gr.lefterisdr.edutailors.exception.StudentNotRegisteredAtCourseException;
 import gr.lefterisdr.edutailors.model.dao.Student;
-import gr.lefterisdr.edutailors.repository.CourseRepo;
-import gr.lefterisdr.edutailors.repository.StudentRepo;
+import gr.lefterisdr.edutailors.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/student")
 public class StudentController
 {
     @Autowired
-    private StudentRepo studentRepo;
+    private StudentService studentService;
 
-    @Autowired
-    private CourseRepo courseRepo;
-
-    @GetMapping
+    @GetMapping("/{courseId}")
     public List<Student> getStudents(@PathVariable Integer courseId)
             throws CourseNotFoundException
     {
-        Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
-
-        return studentRepo.findAll().stream().filter(stud -> stud.getStudentCourses().contains(course)).collect(Collectors.toList());
+        return studentService.getStudents(courseId);
     }
 
-    @PostMapping
+    @PostMapping("/{studentId}/{courseId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public Integer createStudent(@RequestBody Student student)
+    public Integer registerStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
+            throws StudentNotFoundException, CourseNotFoundException, StudentAlreadyRegisteredAtCourseException
     {
-        return studentRepo.saveAndFlush(student).getId();
+        return studentService.registerStudent(studentId, courseId);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteStudent(@PathVariable("id") Integer id)
-            throws StudentNotFoundException
+    @DeleteMapping("/{studentId}/{courseId}")
+    public Integer unregisterStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
+            throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
     {
-        Student existingStudent = studentRepo.findById(id).orElseThrow(StudentNotFoundException::new);
-        studentRepo.delete(existingStudent);
+        return studentService.unregisterStudent(studentId, courseId);
     }
 }
