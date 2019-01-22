@@ -32,8 +32,8 @@ public class StudentService
 
         return course.getCourseStudents().stream()
                 .sorted((cs1, cs2) -> {
-                    Student student1 = cs1.getPk().getStudent();
-                    Student student2 = cs2.getPk().getStudent();
+                    Student student1 = cs1.getStudentCourseId().getStudent();
+                    Student student2 = cs2.getStudentCourseId().getStudent();
 
                     int lastnameComp = student1.getLastname().compareTo(student2.getLastname());
 
@@ -51,8 +51,19 @@ public class StudentService
 
                     return cs1.getEnrolmentDate().compareTo(cs2.getEnrolmentDate());
                 })
-                .map(cs -> cs.getPk().getStudent())
+                .map(cs -> cs.getStudentCourseId().getStudent())
                 .collect(Collectors.toList());
+    }
+
+    public boolean isStudentRegisteredAtCourse(Integer studentId, Integer courseId)
+            throws StudentNotFoundException, CourseNotFoundException
+    {
+        studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
+        Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
+
+        return course.getCourseStudents().stream()
+                .map(sc -> sc.getStudentCourseId().getStudent())
+                .anyMatch(st -> st.getId() == studentId);
     }
 
     public Integer enrollStudent(Integer studentId, Integer courseId)
@@ -61,16 +72,16 @@ public class StudentService
         Student student = studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
         Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
-        if (student.getStudentCourses().stream().map(sc -> sc.getPk().getCourse()).anyMatch(c -> c.getId() == courseId))
+        if (this.isStudentRegisteredAtCourse(studentId, courseId))
         {
             throw new StudentAlreadyRegisteredAtCourseException();
         }
 
         StudentCourse studentCourse = new StudentCourse(student, course);
 
-        student.getStudentCourses().add(studentCourse);
+        course.getCourseStudents().add(studentCourse);
 
-        return studentRepo.saveAndFlush(student).getId();
+        return courseRepo.saveAndFlush(course).getId();
     }
 
     public Integer disenrollStudent(Integer studentId, Integer courseId)
@@ -79,15 +90,15 @@ public class StudentService
         Student student = studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
         Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
-        student.getStudentCourses().stream()
-                .map(sc -> sc.getPk().getCourse())
-                .filter(c -> c.getId() == courseId)
+        course.getCourseStudents().stream()
+                .map(sc -> sc.getStudentCourseId().getStudent())
+                .filter(st -> st.getId() == studentId)
                 .findAny().orElseThrow(StudentNotRegisteredAtCourseException::new);
 
         StudentCourse studentCourse = new StudentCourse(student, course);
 
-        student.getStudentCourses().remove(studentCourse);
+        course.getCourseStudents().add(studentCourse);
 
-        return studentRepo.saveAndFlush(student).getId();
+        return courseRepo.saveAndFlush(course).getId();
     }
 }

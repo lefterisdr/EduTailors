@@ -1,12 +1,13 @@
 package gr.lefterisdr.edutailors.model.dao;
 
-import javax.persistence.CascadeType;
-import javax.persistence.ManyToOne;
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-/**
- * Created by Le on 20-Jan-19.
- */
+import javax.persistence.*;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
+
+@Embeddable
 public class StudentCourseId implements Serializable
 {
     @ManyToOne(cascade = CascadeType.ALL)
@@ -20,8 +21,8 @@ public class StudentCourseId implements Serializable
 
     public StudentCourseId(Student student, Course course)
     {
-        this.student = student;
         this.course = course;
+        this.student = student;
     }
 
     public Student getStudent()
@@ -44,7 +45,8 @@ public class StudentCourseId implements Serializable
         this.course = course;
     }
 
-    public boolean equals(Object studentCourseId) {
+    public boolean equals(Object studentCourseId)
+    {
         if (this == studentCourseId)
         {
             return true;
@@ -57,17 +59,11 @@ public class StudentCourseId implements Serializable
 
         StudentCourseId id = (StudentCourseId) studentCourseId;
 
-        if (student != null ? !student.equals(id.getStudent()) : id.getStudent() != null)
-        {
-            return false;
-        }
-
-        return (course != null ? course.equals(id.getCourse()) : id.getCourse() == null);
+        return Objects.equals(student, id.student) && Objects.equals(course, id.course);
     }
 
-    public int hashCode() {
-        int result = (student != null ? student.hashCode() : 0);
-
-        return 31 * result + (course != null ? course.hashCode() : 0);
+    public int hashCode()
+    {
+        return Objects.hash(student, course);
     }
 }

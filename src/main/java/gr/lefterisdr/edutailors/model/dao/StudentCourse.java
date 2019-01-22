@@ -4,65 +4,75 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Date;
+import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @AssociationOverrides({
-        @AssociationOverride(name="pk.course", joinColumns = @JoinColumn(name="course_id")),
-        @AssociationOverride(name="pk.student", joinColumns = @JoinColumn(name="student_id"))})
-public class StudentCourse implements Serializable
+        @AssociationOverride(name = "studentCourseId.course", joinColumns = @JoinColumn(name = "course_id")),
+        @AssociationOverride(name = "studentCourseId.student", joinColumns = @JoinColumn(name = "student_id"))})
+public class StudentCourse //implements Serializable
 {
     @EmbeddedId
-    private StudentCourseId pk;
+    private StudentCourseId studentCourseId;
+    //    @ManyToOne(fetch = FetchType.LAZY)
+//    @MapsId("studentId")
+//    private Student student;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @MapsId("courseId")
+//    private Course course;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    private Date enrolmentDate;
+    private Instant enrolmentDate;
 
-    public StudentCourse() {}
+    public StudentCourse()
+    {
+    }
 
     public StudentCourse(Student student, Course course)
     {
-        pk = new StudentCourseId(student, course);
-        enrolmentDate = new Date(LocalDate.now().toEpochDay());
+        studentCourseId = new StudentCourseId(student, course);
+
+        enrolmentDate = Instant.now();
     }
 
-    public StudentCourseId getPk()
+    public StudentCourseId getStudentCourseId()
     {
-        return pk;
+        return studentCourseId;
     }
 
-    public void setPk(StudentCourseId pk)
+    public void setStudentCourseId(StudentCourseId studentCourseId)
     {
-        this.pk = pk;
+        this.studentCourseId = studentCourseId;
     }
 
-    public Date getEnrolmentDate()
+    public Instant getEnrolmentDate()
     {
         return enrolmentDate;
     }
 
-    public void setEnrolmentDate(Date enrolmentDate)
+    public void setEnrolmentDate(Instant enrolmentDate)
     {
         this.enrolmentDate = enrolmentDate;
     }
 
-    public boolean equals(Object studentCourse) {
-        if (this == studentCourse)
-        {
-            return true;
-        }
 
-        if ((studentCourse == null) || (this.getClass() != studentCourse.getClass()))
-        {
-            return false;
-        }
-
-        StudentCourse sc = (StudentCourse) studentCourse;
-
-        return (pk != null ? pk.equals(sc.getPk()) : sc.getPk() == null);
-    }
-
-    public int hashCode() {
-        return (pk != null ? pk.hashCode() : 0);
-    }
+    //    public boolean equals(Object studentCourse) {
+//        if (this == studentCourse)
+//        {
+//            return true;
+//        }
+//
+//        if ((studentCourse == null) || (this.getClass() != studentCourse.getClass()))
+//        {
+//            return false;
+//        }
+//
+//        StudentCourse sc = (StudentCourse) studentCourse;
+//
+//        return Objects.equals(this.student, sc.student) && Objects.equals(this.course, sc.course);
+//    }
+//
+//    public int hashCode() {
+//        return Objects.hash(student, course);
+//    }
 }

@@ -1,10 +1,12 @@
 package gr.lefterisdr.edutailors.model.dao;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class Course
+public class Course implements Serializable
 {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -12,8 +14,8 @@ public class Course
     private int id;
     private String title;
     private String description;
-    @OneToMany(mappedBy = "pk.course", cascade=CascadeType.ALL)
-    private Set<StudentCourse> courseStudents;
+    @OneToMany(mappedBy = "studentCourseId.course", cascade=CascadeType.ALL)
+    private Set<StudentCourse> courseStudents = new HashSet<>();
 
     public int getId()
     {

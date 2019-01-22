@@ -3,11 +3,13 @@ package gr.lefterisdr.edutailors.model.dao;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class Student
+public class Student implements Serializable
 {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,9 +21,9 @@ public class Student
     @Enumerated(EnumType.STRING)
     private SexType sex;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    private Date birthdate;
-    @OneToMany(mappedBy = "pk.student", cascade=CascadeType.ALL)
-    private Set<StudentCourse> studentCourses;
+    private Instant birthdate;
+//    @OneToMany(mappedBy = "studentCourseId.student", cascade=CascadeType.ALL)
+//    private Set<StudentCourse> studentCourses = new HashSet<>();
 
     public enum SexType
     {
@@ -68,23 +70,23 @@ public class Student
         this.sex = sex;
     }
 
-    public Date getBirthdate()
+    public Instant getBirthdate()
     {
         return birthdate;
     }
 
-    public void setBirthdate(Date birthdate)
+    public void setBirthdate(Instant birthdate)
     {
         this.birthdate = birthdate;
     }
 
-    public Set<StudentCourse> getStudentCourses()
-    {
-        return studentCourses;
-    }
-
-    public void setStudentCourses(Set<StudentCourse> studentCourses)
-    {
-        this.studentCourses = studentCourses;
-    }
+//    public Set<StudentCourse> getStudentCourses()
+//    {
+//        return studentCourses;
+//    }
+//
+//    public void setStudentCourses(Set<StudentCourse> studentCourses)
+//    {
+//        this.studentCourses = studentCourses;
+//    }
 }
