@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EduTailorsApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ListStudentsTests
+public class EduTailorsTests
 {
     @LocalServerPort
     private int port;
@@ -42,17 +42,10 @@ public class ListStudentsTests
     }
 
     @Test
-    public void test_number_of_students_in_course_3()
+    public void test_student_enroll_failure()
             throws IOException, JSONException
     {
-        this.test_number_of_students_in_course(3,2);
-    }
-
-    @Test
-    public void test_student_already_registered()
-            throws IOException, JSONException
-    {
-        JsonNode response = this.test_enroll(1,2);
+        JsonNode response = this.enroll(1,2);
         this.assertStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.get("message").asText(), equalTo("StudentAlreadyRegisteredAtCourse"));
     }
@@ -61,9 +54,39 @@ public class ListStudentsTests
     public void test_student_enroll_success()
             throws IOException, JSONException
     {
-        JsonNode response = this.test_enroll(3,3);
+        JsonNode response = this.getStudentInCourse(3,3);
+        this.assertStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.get("message").asText(), equalTo("StudentNotRegisteredAtCourse"));
+
+        this.enroll(3,3);
+        this.assertStatus(HttpStatus.CREATED);
+
+        this.getStudentInCourse(3,3);
         this.assertStatus(HttpStatus.OK);
-        assertThat(response.get("message").asText(), equalTo("StudentAlreadyRegisteredAtCourse"));
+    }
+
+    @Test
+    public void test_student_disenroll_failure()
+            throws IOException, JSONException
+    {
+        JsonNode response = this.disenroll(1,4);
+        this.assertStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.get("message").asText(), equalTo("StudentNotRegisteredAtCourse"));
+    }
+
+    @Test
+    public void test_student_disenroll_success()
+            throws IOException, JSONException
+    {
+        this.getStudentInCourse(3,3);
+        this.assertStatus(HttpStatus.OK);
+
+        this.disenroll(3,3);
+        this.assertStatus(HttpStatus.OK);
+
+        JsonNode response = this.getStudentInCourse(3,3);
+        this.assertStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.get("message").asText(), equalTo("StudentNotRegisteredAtCourse"));
     }
 
     private void test_number_of_students_in_course(int courseId, int expectedNumber)
@@ -80,23 +103,18 @@ public class ListStudentsTests
         assertThat(jsonResponse.size(), is(expectedNumber));
     }
 
-    private void test_is_student_in_course(int courseId, int studentId)
+    private JsonNode getStudentInCourse(int courseId, int studentId)
             throws JSONException, IOException
     {
         response = restTemplate.exchange(
-                this.createURLWithPort("/api/v1/student/" + courseId),
+                this.createURLWithPort("/api/v1/student/" + studentId + "/" + courseId),
                 HttpMethod.GET, entityNoBody, String.class);
 
-        this.assertStatus(HttpStatus.OK);
-
-        JsonNode jsonResponse = new ObjectMapper().readTree(response.getBody());
-
-        jsonResponse.findValuesAsText("");
-
-        assertThat(jsonResponse.size(), is(expectedNumber));
+        return new ObjectMapper().readTree(response.getBody());
+//        return new ObjectMapper().treeToValue(node, Student.class);
     }
 
-    private JsonNode test_enroll(int courseId, int studentId)
+    private JsonNode enroll(int courseId, int studentId)
             throws IOException
     {
         response = restTemplate.exchange(
@@ -106,7 +124,7 @@ public class ListStudentsTests
         return new ObjectMapper().readTree(response.getBody());
     }
 
-    private JsonNode test_disenroll(int courseId, int studentId)
+    private JsonNode disenroll(int courseId, int studentId)
             throws IOException
     {
         response = restTemplate.exchange(

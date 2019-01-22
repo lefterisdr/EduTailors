@@ -20,10 +20,17 @@ public class StudentController
     private StudentService studentService;
 
     @GetMapping("/{courseId}")
-    public List<Student> getEnrolledStudents(@PathVariable Integer courseId)
+    public List<Student> getEnrolledStudents(@PathVariable("courseId") Integer courseId)
             throws CourseNotFoundException
     {
         return studentService.getEnrolledStudents(courseId);
+    }
+
+    @GetMapping("/{studentId}/{courseId}")
+    public Student getEnrolledStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
+            throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
+    {
+        return studentService.getEnrolledStudent(studentId, courseId);
     }
 
     @PostMapping("/{studentId}/{courseId}")
@@ -38,6 +45,8 @@ public class StudentController
     public Integer disenrollStudent(@PathVariable("studentId") Integer studentId, @PathVariable("courseId") Integer courseId)
             throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
     {
-        return studentService.disenrollStudent(studentId, courseId);
+        studentService.disenrollStudent(studentId, courseId);
+
+        return studentId;
     }
 }

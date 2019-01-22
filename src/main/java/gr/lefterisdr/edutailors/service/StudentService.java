@@ -12,6 +12,7 @@ import gr.lefterisdr.edutailors.repository.StudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,9 @@ public class StudentService
 
     @Autowired
     private CourseRepo courseRepo;
+
+    @Autowired
+    private EntityManager entityManager;
 
     public List<Student> getEnrolledStudents(Integer courseId)
             throws CourseNotFoundException
@@ -55,15 +59,17 @@ public class StudentService
                 .collect(Collectors.toList());
     }
 
-    public boolean isStudentRegisteredAtCourse(Integer studentId, Integer courseId)
-            throws StudentNotFoundException, CourseNotFoundException
+    public Student getEnrolledStudent(Integer studentId, Integer courseId)
+            throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
     {
         studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
         Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
         return course.getCourseStudents().stream()
                 .map(sc -> sc.getStudentCourseId().getStudent())
-                .anyMatch(st -> st.getId() == studentId);
+                .filter(st -> st.getId() == studentId)
+                .findAny()
+                .orElseThrow(StudentNotRegisteredAtCourseException::new);
     }
 
     public Integer enrollStudent(Integer studentId, Integer courseId)
@@ -72,7 +78,7 @@ public class StudentService
         Student student = studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
         Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
-        if (this.isStudentRegisteredAtCourse(studentId, courseId))
+        if (this.isStudentRegisteredAtCourse(student, course))
         {
             throw new StudentAlreadyRegisteredAtCourseException();
         }
@@ -84,21 +90,30 @@ public class StudentService
         return courseRepo.saveAndFlush(course).getId();
     }
 
-    public Integer disenrollStudent(Integer studentId, Integer courseId)
+    public void disenrollStudent(Integer studentId, Integer courseId)
             throws StudentNotFoundException, CourseNotFoundException, StudentNotRegisteredAtCourseException
     {
         Student student = studentRepo.findById(studentId).orElseThrow(StudentNotFoundException::new);
         Course course = courseRepo.findById(courseId).orElseThrow(CourseNotFoundException::new);
 
-        course.getCourseStudents().stream()
-                .map(sc -> sc.getStudentCourseId().getStudent())
-                .filter(st -> st.getId() == studentId)
-                .findAny().orElseThrow(StudentNotRegisteredAtCourseException::new);
+        if (! this.isStudentRegisteredAtCourse(student, course))
+        {
+            throw new StudentNotRegisteredAtCourseException();
+        }
 
         StudentCourse studentCourse = new StudentCourse(student, course);
 
-        course.getCourseStudents().add(studentCourse);
+        course.getCourseStudents().remove(studentCourse);
 
-        return courseRepo.saveAndFlush(course).getId();
+        entityManager.getTransaction().commit();
     }
+
+    private boolean isStudentRegisteredAtCourse(Student student, Course course)
+            throws StudentNotFoundException, CourseNotFoundException
+    {
+        return course.getCourseStudents().stream()
+                .map(sc -> sc.getStudentCourseId().getStudent())
+                .anyMatch(st -> st.getId() == student.getId());
+    }
+
 }

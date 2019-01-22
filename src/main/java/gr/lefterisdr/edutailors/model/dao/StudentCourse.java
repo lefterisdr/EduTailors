@@ -11,7 +11,7 @@ import java.util.Objects;
 @AssociationOverrides({
         @AssociationOverride(name = "studentCourseId.course", joinColumns = @JoinColumn(name = "course_id")),
         @AssociationOverride(name = "studentCourseId.student", joinColumns = @JoinColumn(name = "student_id"))})
-public class StudentCourse //implements Serializable
+public class StudentCourse implements Serializable
 {
     @EmbeddedId
     private StudentCourseId studentCourseId;
@@ -56,23 +56,23 @@ public class StudentCourse //implements Serializable
     }
 
 
-    //    public boolean equals(Object studentCourse) {
-//        if (this == studentCourse)
-//        {
-//            return true;
-//        }
-//
-//        if ((studentCourse == null) || (this.getClass() != studentCourse.getClass()))
-//        {
-//            return false;
-//        }
-//
-//        StudentCourse sc = (StudentCourse) studentCourse;
-//
-//        return Objects.equals(this.student, sc.student) && Objects.equals(this.course, sc.course);
-//    }
-//
-//    public int hashCode() {
-//        return Objects.hash(student, course);
-//    }
+    public boolean equals(Object studentCourse) {
+        if (this == studentCourse)
+        {
+            return true;
+        }
+
+        if ((studentCourse == null) || (this.getClass() != studentCourse.getClass()))
+        {
+            return false;
+        }
+
+        StudentCourse sc = (StudentCourse) studentCourse;
+
+        return Objects.equals(studentCourseId, sc.studentCourseId);
+    }
+
+    public int hashCode() {
+        return Objects.hash(studentCourseId);
+    }
 }

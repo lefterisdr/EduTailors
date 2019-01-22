@@ -1,10 +1,9 @@
 package gr.lefterisdr.edutailors.model.dao;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Embeddable;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.Objects;
 
 @Embeddable
